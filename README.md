@@ -1,3 +1,3 @@
 # SwiftUI-CoreMl
 
-# # Using Object Detection CoreML Model using with SwiftUI
+## Using Object Detection CoreML Model using with SwiftUI
