@@ -26,38 +26,123 @@ struct ARViewContainer: UIViewRepresentable {
         } catch {
             #if DEBUG
             print(error)
-            fatalError()
             #endif
+            fatalError()
         }
     }()
     
+    let arView = ARView(frame: .zero, cameraMode: .ar, automaticallyConfigureSession: true)
+    private var hitTestResultValue : ARRaycastResult!
+    private var visionRequests = [VNRequest]()
     
     func makeUIView(context: Context) -> ARView {
-        
-        let arView = ARView(frame: .zero, cameraMode: .ar, automaticallyConfigureSession: true)
-        arView.debugOptions = [.showPhysics , .showWorldOrigin, .showStatistics]
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapGestureMethod))
+        let tapGesture = UITapGestureRecognizer(target: context.coordinator,
+                                                action: #selector(Coordinator.tapGestureMethod( _ :)))
         arView.addGestureRecognizer(tapGesture)
-        
-        
         return arView
         
     }
-    
     func updateUIView(_ uiView: ARView, context: Context) {}
     
-}
-extension ARViewContainer {
+    func makeCoordinator() -> Coordinator {
+        return Coordinator(self)
+    }
     
-    @objc func tapGestureMethod(recognizer : UITapGestureRecognizer){
+    class Coordinator : NSObject{
+        var parent : ARViewContainer
         
+        init( _ parent : ARViewContainer) {
+            self.parent = parent
+        }
+        
+        @objc func tapGestureMethod(_ sender : UITapGestureRecognizer){
+            let sceneView = sender.view as! ARView
+            let touchLocation = parent.arView.center
+            
+            let result = parent.arView.raycast(from: touchLocation,
+                                               allowing: .estimatedPlane,
+                                               alignment: .any)
+            guard let raycastHitTestResult : ARRaycastResult = result.first else {
+                return
+            }
+            guard let currentFrame = sceneView.session.currentFrame else {
+                return
+            }
+            
+            parent.hitTestResultValue = raycastHitTestResult
+            let buffer = currentFrame.capturedImage
+            visionRequest(buffer)
+        }
+        
+        func createText(_ generatedText : String){
+            let mesh = MeshResource.generateText(generatedText,
+                                                 extrusionDepth: 0.001,
+                                                 font: UIFont(name: "Helvetica Neue", size: 0.05)!,
+                                                 containerFrame: CGRect.zero,
+                                                 alignment: .center,
+                                                 lineBreakMode: .byCharWrapping)
+            let material = SimpleMaterial(color: .randomColor, roughness: 1, isMetallic: true)
+            let modelEntity = ModelEntity(mesh: mesh, materials: [material])
+            let anchorEntity = AnchorEntity(world: SIMD3<Float>(parent.hitTestResultValue.worldTransform.columns.3.x,
+                                                                parent.hitTestResultValue.worldTransform.columns.3.y,
+                                                                parent.hitTestResultValue.worldTransform.columns.3.z
+            ))
+            anchorEntity.addChild(modelEntity)
+            parent.arView.scene.addAnchor(anchorEntity)
+        }
+        
+        private func visionRequest( _ buffer : CVPixelBuffer) {
+            let visionModel = try! VNCoreMLModel(for: parent.resnetModel.model)
+            let request = VNCoreMLRequest(model: visionModel) { request, error in
+                if error != nil{
+                    return
+                }
+                guard let observations = request.results ,
+                      let observation = observations.first as? VNClassificationObservation else {
+                    return
+                }
+                #if DEBUG
+                print("Object Name: \(observation.identifier) , \(observation.confidence * 100)")
+                #endif
+                DispatchQueue.main.async {
+                    self.createText("\(String(describing: observation.identifier))\n%\(observation.confidence * 100)")
+                }
+                
+            }
+            request.imageCropAndScaleOption = .centerCrop
+            parent.visionRequests = [request]
+            let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: buffer,
+                                                            orientation: .upMirrored,
+                                                            options: [:])
+            
+            DispatchQueue.global().async {
+                try! imageRequestHandler.perform(self.parent.visionRequests)
+            }
+        }
     }
 }
 
+
 #if DEBUG
-struct ContentView_Previews : PreviewProvider {
+struct MainView_Previews : PreviewProvider {
     static var previews: some View {
         MainView()
     }
 }
 #endif
+
+extension UIColor {
+    static var randomColor : UIColor{
+        return UIColor(
+            red:   .random(),
+            green: .random(),
+            blue:  .random(),
+            alpha: 1.0
+        )
+    }
+}
+extension CGFloat {
+    static func random() -> CGFloat {
+        return CGFloat(arc4random()) / CGFloat(UInt32.max)
+    }
+}
