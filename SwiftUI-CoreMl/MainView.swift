@@ -12,66 +12,35 @@ import Vision
 
 struct MainView : View {
     var body: some View {
-        ZStack{
-            ARViewContainer()
-            VStack{
-                Spacer()
-                Image(systemName: "plus")
-                    .imageScale(.large)
-                    .font(.system(size: 30))
-                Spacer()
-            }
-            VStack{
-                Spacer()
-                HStack(alignment: .center, spacing : 50){
-                    Button(action: {
-                        let coor = ARViewContainer.Coordinator(ARViewContainer())
-                        coor.er()
-                    }, label: {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 50))
-                    })
-                    Button(action: {
-                        
-                    }, label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 50))
-                    })
-                }
-                .foregroundColor(.white)
-                .padding()
-                .frame(width: UIScreen.main.bounds.width)
-                .background(Color.black.opacity(0.4))
-            }
-        }
-        .edgesIgnoringSafeArea(.all)
+        ARViewContainer()
+            .edgesIgnoringSafeArea(.all)
     }
 }
 
 struct ARViewContainer: UIViewRepresentable {
     
-let resnetModel : Resnet50 = {
-    do {
-        let configuration = MLModelConfiguration()
-        return try Resnet50(configuration: configuration)
-    } catch {
-        #if DEBUG
-        print(error)
-        #endif
-        fatalError()
-    }}()
+    let resnetModel : Resnet50 = {
+        do {
+            let configuration = MLModelConfiguration()
+            return try Resnet50(configuration: configuration)
+        } catch let error {
+            fatalError(error.localizedDescription)
+        }
+    }()
     
-    let arView = ARView(frame: .zero, cameraMode: .ar, automaticallyConfigureSession: true)
-    var hitTestResultValue : ARRaycastResult!
+    let arView = ARView(frame: .zero)
+    var rayCastResultValue : ARRaycastResult!
     var visionRequests = [VNRequest]()
     
     func makeUIView(context: Context) -> ARView {
-        let tapGesture = UITapGestureRecognizer(target: context.coordinator,
-                                                action: #selector(Coordinator.tapGestureMethod(_:)))
+        let tapGesture = UITapGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.tapGestureMethod(_:))
+        )
         arView.addGestureRecognizer(tapGesture)
         return arView
-        
     }
+    
     func updateUIView(_ uiView: ARView, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
@@ -95,29 +64,14 @@ let resnetModel : Resnet50 = {
             guard let raycastHitTestResult : ARRaycastResult = result.first else {
                 return
             }
-            print("ee" , raycastHitTestResult)
+            
             guard let currentFrame = sceneView.session.currentFrame else {
                 return
             }
             
-            parent.hitTestResultValue = raycastHitTestResult
+            parent.rayCastResultValue = raycastHitTestResult
             let buffer = currentFrame.capturedImage
             visionRequest(buffer)
-        }
-        
-        func er(){
-            let touchLocation = CGPoint(x: 187.5, y: 406)
-            let result = parent.arView.raycast(from: touchLocation,
-                                               allowing: .existingPlaneInfinite,
-                                               alignment: .any)
-            guard let raycastHitTestResult : ARRaycastResult = result.first else {
-                return
-            }
-            print(raycastHitTestResult)
-            guard parent.arView.session.currentFrame != nil else {
-                return
-            }
-            
         }
         
         func createText(_ generatedText : String){
@@ -130,9 +84,9 @@ let resnetModel : Resnet50 = {
             
             let material = SimpleMaterial(color: .randomColor, roughness: 1, isMetallic: true)
             let modelEntity = ModelEntity(mesh: mesh, materials: [material])
-            let anchorEntity = AnchorEntity(world: SIMD3<Float>(parent.hitTestResultValue.worldTransform.columns.3.x,
-                                                                parent.hitTestResultValue.worldTransform.columns.3.y,
-                                                                parent.hitTestResultValue.worldTransform.columns.3.z
+            let anchorEntity = AnchorEntity(world: SIMD3<Float>(parent.rayCastResultValue.worldTransform.columns.3.x,
+                                                                parent.rayCastResultValue.worldTransform.columns.3.y,
+                                                                parent.rayCastResultValue.worldTransform.columns.3.z
             ))
             anchorEntity.addChild(modelEntity)
             parent.arView.scene.addAnchor(anchorEntity)
@@ -149,7 +103,7 @@ let resnetModel : Resnet50 = {
                     return
                 }
                 #if DEBUG
-                //print("Object Name: \(observation.identifier) , \(observation.confidence * 100)")
+                print("Object Name: \(observation.identifier) , \(observation.confidence * 100)")
                 #endif
                 DispatchQueue.main.async {
                     self.createText("\(String(describing: observation.identifier))\n%\(observation.confidence * 100)")

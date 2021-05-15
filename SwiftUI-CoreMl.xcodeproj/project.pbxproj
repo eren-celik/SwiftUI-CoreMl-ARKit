@@ -13,7 +13,6 @@
 		106CE841264D6D320030BC9B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 106CE840264D6D320030BC9B /* Assets.xcassets */; };
 		106CE844264D6D320030BC9B /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 106CE843264D6D320030BC9B /* Preview Assets.xcassets */; };
 		106CE847264D6D320030BC9B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 106CE845264D6D320030BC9B /* LaunchScreen.storyboard */; };
-		106CE84E264D6E4E0030BC9B /* Experience.rcproject in Sources */ = {isa = PBXBuildFile; fileRef = 106CE83E264D6D2F0030BC9B /* Experience.rcproject */; };
 		106CE853264D75F90030BC9B /* ORB_Body_Diff.png in Resources */ = {isa = PBXBuildFile; fileRef = 106CE850264D75F70030BC9B /* ORB_Body_Diff.png */; };
 		106CE854264D75F90030BC9B /* ORB_Circles_Diff.png in Resources */ = {isa = PBXBuildFile; fileRef = 106CE851264D75F80030BC9B /* ORB_Circles_Diff.png */; };
 		106CE855264D75F90030BC9B /* ORB_Eye_Diff.png in Resources */ = {isa = PBXBuildFile; fileRef = 106CE852264D75F90030BC9B /* ORB_Eye_Diff.png */; };
@@ -24,7 +23,6 @@
 		106CE837264D6D2F0030BC9B /* SwiftUI-CoreMl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SwiftUI-CoreMl.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		106CE83A264D6D2F0030BC9B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		106CE83C264D6D2F0030BC9B /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
-		106CE83E264D6D2F0030BC9B /* Experience.rcproject */ = {isa = PBXFileReference; lastKnownFileType = file.rcproject; path = Experience.rcproject; sourceTree = "<group>"; };
 		106CE840264D6D320030BC9B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		106CE843264D6D320030BC9B /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		106CE846264D6D320030BC9B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -68,7 +66,6 @@
 				106CE84F264D75E40030BC9B /* Models */,
 				106CE83A264D6D2F0030BC9B /* AppDelegate.swift */,
 				106CE83C264D6D2F0030BC9B /* MainView.swift */,
-				106CE83E264D6D2F0030BC9B /* Experience.rcproject */,
 				106CE840264D6D320030BC9B /* Assets.xcassets */,
 				106CE845264D6D320030BC9B /* LaunchScreen.storyboard */,
 				106CE848264D6D320030BC9B /* Info.plist */,
@@ -171,7 +168,6 @@
 				106CE83D264D6D2F0030BC9B /* MainView.swift in Sources */,
 				106CE83B264D6D2F0030BC9B /* AppDelegate.swift in Sources */,
 				1025E56F264D7A0100A6CA5F /* Resnet50.mlmodel in Sources */,
-				106CE84E264D6E4E0030BC9B /* Experience.rcproject in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
